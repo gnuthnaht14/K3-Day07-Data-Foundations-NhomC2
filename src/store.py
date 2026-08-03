@@ -37,12 +37,32 @@ class EmbeddingStore:
             self._collection = None
 
     def _make_record(self, doc: Document) -> dict[str, Any]:
-        # TODO: build a normalized stored record for one document
-        raise NotImplementedError("Implement EmbeddingStore._make_record")
+        meta = dict(doc.metadata) if doc.metadata else {}
+        if "doc_id" not in meta:
+            meta["doc_id"] = doc.id.split("::")[0]
+        embedding = self._embedding_fn(doc.content)
+        return {
+            "id": f"{doc.id}_{self._next_index}",
+            "content": doc.content,
+            "metadata": meta,
+            "embedding": embedding,
+        }
 
     def _search_records(self, query: str, records: list[dict[str, Any]], top_k: int) -> list[dict[str, Any]]:
-        # TODO: run in-memory similarity search over provided records
-        raise NotImplementedError("Implement EmbeddingStore._search_records")
+        if not records or top_k <= 0:
+            return []
+        query_vector = self._embedding_fn(query)
+        scored = [
+            {
+                "id": rec["id"],
+                "content": rec["content"],
+                "metadata": rec["metadata"],
+                "score": float(_dot(query_vector, rec["embedding"])),
+            }
+            for rec in records
+        ]
+        scored.sort(key=lambda item: item["score"], reverse=True)
+        return scored[:top_k]
 
     def add_documents(self, docs: list[Document]) -> None:
         """
@@ -51,8 +71,12 @@ class EmbeddingStore:
         For ChromaDB: use collection.add(ids=[...], documents=[...], embeddings=[...])
         For in-memory: append dicts to self._store
         """
-        # TODO: embed each doc and add to store
-        raise NotImplementedError("Implement EmbeddingStore.add_documents")
+        if not docs:
+            return
+        for doc in docs:
+            record = self._make_record(doc)
+            self._next_index += 1
+            self._store.append(record)
 
     def search(self, query: str, top_k: int = 5) -> list[dict[str, Any]]:
         """
@@ -60,13 +84,11 @@ class EmbeddingStore:
 
         For in-memory: compute dot product of query embedding vs all stored embeddings.
         """
-        # TODO: embed query, compute similarities, return top_k
-        raise NotImplementedError("Implement EmbeddingStore.search")
+        return self._search_records(query, self._store, top_k)
 
     def get_collection_size(self) -> int:
         """Return the total number of stored chunks."""
-        # TODO
-        raise NotImplementedError("Implement EmbeddingStore.get_collection_size")
+        return len(self._store)
 
     def search_with_filter(self, query: str, top_k: int = 3, metadata_filter: dict = None) -> list[dict]:
         """
