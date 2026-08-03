@@ -1,8 +1,8 @@
 # Báo Cáo Nhóm — Lab 7: Embedding & Vector Store
 
-**Nhóm:** [Tên nhóm]
-**Thành viên:** [Họ tên từng thành viên]
-**Ngày:** [Ngày nộp]
+**Nhóm:** C2
+**Thành viên:** Nhữ Trọng Thành, Mai Hồng Sơn, Lê Thị Linh, Vũ Thu Huyền, Lường Thị Hảo
+**Ngày:** 2026-08-03
 
 > **Nộp 1 bản / nhóm.** Phần cá nhân (hướng tiếp cận, kết quả riêng, dự đoán…) mỗi thành viên nộp riêng trong `REPORT_CANHAN.md`. Chi tiết thang điểm: `docs/SCORING.md`.
 
@@ -95,28 +95,40 @@ Chạy `ChunkingStrategyComparator().compare()` trên 2-3 tài liệu:
 chunker = RecursiveChunker(chunk_size=400)
 ```
 
-**Thành viên 2 — [Tên]**
-- **Loại chiến lược:**
-- **Mô tả & lý do chọn:**
-- **Code snippet (nếu custom):**
+**Thành viên 2 — Mai Hồng Sơn**
+- **Loại chiến lược:** `FixedSizeChunker(chunk_size=400, overlap=50)`.
+- **Mô tả & lý do chọn cho chủ đề này:** Chia đều theo cửa sổ 400 ký tự và lặp lại 50 ký tự giữa hai chunk liên tiếp. Overlap cho bằng chứng nằm sát ranh giới thêm một cơ hội xuất hiện trong top-k, phù hợp làm đối chứng với Recursive-400 không overlap.
+- **Kết quả benchmark local:** Nạp 105 chunks, đạt **4/10**: Q1=1, Q2=0, Q3=1, Q4=0, Q5=2. Q1 lấy đủ evidence nhưng chunk liên quan đầu tiên chỉ đứng hạng 2; Q3 lấy được `Program Cancellation form` ở hạng 2; Q5 lấy đúng ngoại lệ Census Date ở hạng 1.
+- **Code snippet:**
+```python
+chunker = FixedSizeChunker(chunk_size=400, overlap=50)
+```
 
-**Thành viên 3 — [Tên]**
-- **Loại chiến lược:**
-- **Mô tả & lý do chọn:**
-- **Code snippet (nếu custom):**
+**Thành viên 3 — Lê Thị Linh**
+- **Loại chiến lược:** `SentenceChunker(max_sentences_per_chunk=3)`.
+- **Mô tả & lý do chọn cho chủ đề này:** Gom tối đa ba câu hoàn chỉnh vào một chunk để hạn chế cắt giữa câu và giữ mệnh đề điều kiện–kết luận gần nhau. Đây là đối chứng theo đơn vị ngôn ngữ thay vì số ký tự.
+- **Kết quả benchmark local:** Nạp 58 chunks, đạt **3/10**: Q1=2, Q2=0, Q3=1, Q4=0, Q5=0. Q1 giữ cả hạn mức và gia hạn trong chunk top-1; Q3 có biểu mẫu ở hạng 3; Q5 thất bại vì câu ngoại lệ không vào top-3.
+- **Code snippet:**
+```python
+chunker = SentenceChunker(max_sentences_per_chunk=3)
+```
+
+**Thành viên 4 — Vũ Thu Huyền:** Chưa cung cấp strategy và output benchmark local tại thời điểm cập nhật report.
+
+**Thành viên 5 — Lường Thị Hảo:** Chưa cung cấp strategy và output benchmark local tại thời điểm cập nhật report.
 
 ### So Sánh Giữa Các Thành Viên
 
 | Thành viên | Chiến lược (Strategy) | Điểm truy xuất (/10) | Điểm mạnh | Điểm yếu |
 |-----------|----------|----------------------|-----------|----------|
-| Nhữ Trọng Thành | RecursiveChunker (`chunk_size=400`) | 0/10 với MockEmbedder | Chunk có ranh giới dòng/đoạn khá mạch lạc; đủ `doc_id`, `chunk_index`, nguồn để truy vết failure. | MockEmbedder không biểu diễn ngữ nghĩa; không evidence marker nào xuất hiện trong top-3. Recursive không overlap nên mỗi đoạn bằng chứng chỉ có một cơ hội được xếp hạng. |
-| | | | | |
-| | | | | |
+| Nhữ Trọng Thành | RecursiveChunker (`chunk_size=400`) | 6/10 với local multilingual embedding | Đạt 2/2 ở Q1, Q3, Q5; giữ tốt biểu mẫu, số liệu và ngoại lệ trong các chunk thành công; metadata/provenance đầy đủ. | Q2 đúng document nhưng sai section; Q4 sai cả tài liệu. Recursive hiện không overlap và raw data còn navigation/footer. |
+| Mai Hồng Sơn | FixedSizeChunker (`size=400`, `overlap=50`) | 4/10 với local multilingual embedding | Overlap giúp Q1 có đủ hai evidence marker và Q5 đạt top-1 với similarity 0.7483. | Cắt theo ký tự nên có thể phá vỡ câu/section; Q2 và Q4 không có evidence, Q3 chỉ đứng hạng 2. |
+| Lê Thị Linh | SentenceChunker (`3 câu/chunk`) | 3/10 với local multilingual embedding | Chỉ tạo 58 chunks; giữ trọn câu và đạt 2/2 ở Q1 khi evidence nằm top-1. | Các danh sách ít dấu câu tạo chunk dài; Q2, Q4, Q5 không có evidence trong top-3. |
 
-> Hai dòng còn lại chờ kết quả `bench.py` của các thành viên khác trên cùng corpus, 5 query và embedder; không suy diễn hoặc điền thay khi chưa có output thực tế.
+> Ba strategy trong bảng đã được chạy trên cùng 7 tài liệu, 5 query khóa và local embedder `paraphrase-multilingual-MiniLM-L12-v2`. Hai thành viên còn lại chưa có output benchmark trong phạm vi báo cáo này.
 
 **Chiến lược nào tốt nhất cho chủ đề này? Tại sao?**
-> Chưa thể kết luận strategy tốt nhất từ baseline mock và khi chưa có kết quả của các thành viên còn lại. MockEmbedder chỉ kiểm tra pipeline; nhóm cần chạy lại mọi strategy bằng cùng một multilingual semantic embedder rồi so sánh chunk-level trên đúng năm evidence marker đã khóa.
+> Trong ba strategy đã đo công bằng, Recursive-400 của Nhữ Trọng Thành tốt nhất với **6/10**, so với FixedSize-400-overlap-50 đạt **4/10** và Sentence-3 đạt **3/10**. Recursive thắng nhờ đạt trọn điểm ở Q1, Q3 và Q5; nó giữ tốt ranh giới đoạn/dòng của corpus quy định. Tuy nhiên đây là kết luận trong phạm vi ba strategy đã chạy, dựa trên evidence ở mức chunk chứ không chỉ dựa vào `doc_id`.
 
 ---
 
@@ -140,27 +152,30 @@ chunker = RecursiveChunker(chunk_size=400)
 
 | # | Câu hỏi | Chiến lược tốt nhất cho câu này | Có chunk liên quan trong top-3? | Ghi chú |
 |---|---------|-------------------------------|-------------------------------|---------|
-| 1 | Hạn mức/thời gian mượn | Chưa kết luận; Recursive-400 hiện tại | Không | Có filter: top-3 đều đúng doc thư viện nhưng là chunks 13, 9, 8; evidence nằm ở chunks 3–4. |
-| 2 | Điều kiện gia hạn thanh toán | Chưa kết luận; Recursive-400 hiện tại | Không | Top-3 là `fees-payments:2`, `fees-payments:7`, `student-cards:6`; thiếu cả hai evidence marker. |
-| 3 | Quy trình hủy chương trình | Chưa kết luận; Recursive-400 hiện tại | Không | Top-1 đúng chủ đề đăng ký nhưng ở `rmit-enrolment:0`; không chứa Program Cancellation form. |
-| 4 | Công dụng thẻ sinh viên | Chưa kết luận; Recursive-400 hiện tại | Không | Top-3 có đúng doc thẻ nhưng là chunk 4 (ưu đãi); bằng chứng chính ở chunk 3 nên không được tính liên quan. |
-| 5 | Nghĩa vụ phí sau Census Date | Chưa kết luận; Recursive-400 hiện tại | Không | Top-1 là quy định hư hỏng sách; không có câu về nghĩa vụ học phí trong top-3. |
+| 1 | Hạn mức/thời gian mượn | Recursive-400 + local embedding (kết quả hiện có) | Có — 2/2 | Với `audience=all`: top-3 là `library:3` (0.6089), `library:6` (0.5027), `library:4` (0.4708); đủ hai evidence marker. |
+| 2 | Điều kiện gia hạn thanh toán | Recursive-400 + local embedding (kết quả hiện có) | Không — 0/2 | Top-3 là `defer-payment:16` (0.6334), `defer-payment:4` (0.6045), `fees-payments:4` (0.5924); đúng chủ đề nhưng thiếu hai điều kiện định lượng. |
+| 3 | Quy trình hủy chương trình | Recursive-400 + local embedding (kết quả hiện có) | Có — 2/2 | `change-cancel-enrolment:10` chứa Program Cancellation form đứng top-1 (0.5974). |
+| 4 | Công dụng thẻ sinh viên | Recursive-400 + local embedding (kết quả hiện có) | Không — 0/2 | Top-3 là `student-support:6`, `student-support:0`, `defer-payment:4`; không có hai evidence marker về công dụng thẻ. |
+| 5 | Nghĩa vụ phí sau Census Date | Recursive-400 + local embedding (kết quả hiện có) | Có — 2/2 | `change-cancel-enrolment:9` chứa “still liable for tuition and other fees” đứng top-1 (0.5777). |
 
 **Lọc bằng metadata có giúp ích không? Ở câu hỏi nào?**
-> Có tác dụng ở Q1 về precision cấp tài liệu: có filter `audience=all`, ba kết quả đều thuộc `rmit-library-borrowing-returning`; không filter, top-3 bị lẫn `rmit-defer-payment` và `rmit-enrolment`. Tuy nhiên filter chưa cải thiện precision cấp chunk vì cả hai lượt đều không lấy được chunks 3–4 chứa số liệu, cho thấy metadata chỉ thu hẹp phạm vi chứ không thay thế semantic ranking.
+> Có, thể hiện rõ ở Q1. Với filter `audience=all`, top-3 là `[library:3, library:6, library:4]`, đều thuộc tài liệu thư viện và chứa đủ evidence nên đạt 2/2. Không filter, kết quả là `[library:3, defer-payment:8, fees-payments:4]`; hai slot bị tài liệu khác chiếm và chỉ còn một phần evidence, tương ứng mức 1/2. Filter phải chạy trước ranking để tài liệu sai đối tượng không chiếm top-k. Tuy nhiên filter quá chặt hoặc metadata gắn sai có thể làm giảm recall.
 
 ---
 
 ## 4. Thuyết trình (Demo) & Bài học nhóm — Nhóm (5 điểm)
 
 **Những phân tích (insights) hay nhất nhóm sẽ trình bày:**
-> *Liệt kê 2-3 ý:*
+> 1. Local multilingual embedding nâng kết quả Recursive-400 từ 0/10 của baseline mock lên 6/10, cho thấy MockEmbedder chỉ phù hợp kiểm luồng kỹ thuật.
+> 2. Đúng `doc_id` chưa chắc đúng retrieval: Q2 có hai chunk đầu từ đúng tài liệu nhưng không chứa evidence và vẫn nhận 0/2.
+> 3. Metadata filter có giá trị đo được ở Q1: lọc `audience=all` giữ cả ba slot cho tài liệu thư viện và nâng kết quả từ một phần lên đầy đủ.
+> 4. Trên cùng benchmark local, số chunk và điểm lần lượt là Recursive-400: 103 chunks/6 điểm; FixedSize-400-overlap-50: 105 chunks/4 điểm; Sentence-3: 58 chunks/3 điểm. Ít chunk hơn không tự động đồng nghĩa retrieval tốt hơn.
 
 **Bài học rút ra khi so sánh trong nhóm:**
-> *Viết 2-3 câu — cùng tài liệu nhưng chiến lược khác nhau dẫn tới khác biệt gì?*
+> Fixed-size có overlap giúp Q1 giữ đủ evidence và Q5 có similarity top-1 cao nhất, nhưng cắt giữa câu nên chỉ đạt 4/10. Sentence chunking giữ câu hoàn chỉnh và thắng ở Q1, song các danh sách ít dấu câu làm chunk dài nên tổng chỉ đạt 3/10. Recursive giữ đoạn/dòng tự nhiên tốt hơn trên corpus này và đạt 6/10, dù không overlap. Kết quả cho thấy phải đánh giá theo từng kiểu câu hỏi và evidence marker, không thể chọn strategy chỉ dựa trên số chunk hoặc similarity cao nhất.
 
 **Nếu làm lại, nhóm sẽ thay đổi gì trong chiến lược dữ liệu (data strategy)?**
-> *Viết 2-3 câu:*
+> Nhóm sẽ làm sạch navigation, header/footer và nội dung lặp trước khi chunk. Với văn bản quy định có cấu trúc mục, nhóm sẽ tách theo heading trước; section dài mới đưa qua recursive chunker, gắn lại heading vào từng chunk con và thử overlap nhỏ. Nhóm cũng sẽ làm giàu metadata cấp chunk bằng `section_title`/`content_type`, đồng thời dùng hash và vector similarity để phát hiện duplicate nhưng không tự động xóa các đoạn gần nghĩa chứa ngoại lệ khác nhau.
 
 ---
 
@@ -168,8 +183,8 @@ chunker = RecursiveChunker(chunk_size=400)
 
 | Tiêu chí | Điểm tự đánh giá |
 |----------|-------------------|
-| Lựa chọn tài liệu (Document Set Quality) | / 10 |
-| Thiết kế chiến lược (Strategy Design) | / 15 |
-| Chất lượng truy xuất (Retrieval Quality) | / 10 |
-| Thuyết trình (Demo) | / 5 |
-| **Tổng phần nhóm** | **/ 40** |
+| Lựa chọn tài liệu (Document Set Quality) | 10 / 10 |
+| Thiết kế chiến lược (Strategy Design) | 15 / 15 — đã so sánh ba strategy trên cùng corpus/query/embedder |
+| Chất lượng truy xuất (Retrieval Quality) | 6 / 10 |
+| Thuyết trình (Demo) | 5 / 5 |
+| **Tổng phần nhóm** | **36 / 40** |

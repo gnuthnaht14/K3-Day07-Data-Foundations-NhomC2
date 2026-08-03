@@ -1,8 +1,8 @@
 # Báo Cáo Cá Nhân — Lab 7: Embedding & Vector Store
 
-**Họ tên:** [Tên sinh viên]
-**Nhóm:** [Tên nhóm]
-**Ngày:** [Ngày nộp]
+**Họ tên:** Nhữ Trọng Thành
+**Nhóm:** C2
+**Ngày:** 2026-08-03
 
 > **Nộp 1 bản / sinh viên.** Phần nhóm (lựa chọn tài liệu, thiết kế chiến lược, bộ câu hỏi đánh giá, demo) nộp chung 1 bản trong `REPORT_NHOM.md`. Chi tiết thang điểm: `docs/SCORING.md`.
 
@@ -104,14 +104,16 @@ tests/test_solution.py::TestEmbeddingStoreDeleteDocument (3 tests) PASSED
 
 | Cặp | Câu A | Câu B | Dự đoán | Điểm thực tế | Đúng? |
 |------|-----------|-----------|---------|--------------|-------|
-| 1 | | | cao / thấp | | |
-| 2 | | | cao / thấp | | |
-| 3 | | | cao / thấp | | |
-| 4 | | | cao / thấp | | |
-| 5 | | | cao / thấp | | |
+| 1 | Sinh viên có thể xin gia hạn thời hạn đóng học phí. | Người học được phép đề nghị lùi hạn thanh toán học phí. | Cao | 0.6858 | Đúng |
+| 2 | Sinh viên được mượn 25 tài liệu trong 30 ngày. | Undergraduate students may borrow 25 library items for 30 days. | Cao | 0.8712 | Đúng |
+| 3 | Để hủy chương trình, sinh viên nộp Program Cancellation form trên myRMIT. | Students must complete the Program Cancellation form in the Submit Request tile in myRMIT. | Cao | 0.7973 | Đúng |
+| 4 | Thẻ sinh viên được dùng để mượn sách và vào khu vực an ninh. | RMIT student cards can be used to borrow library items and access secure areas. | Cao | 0.7002 | Đúng |
+| 5 | Sinh viên được mượn tài liệu từ thư viện trong 30 ngày. | Dự báo thời tiết cho biết ngày mai có mưa lớn. | Thấp | 0.0194 | Đúng |
 
 **Kết quả nào bất ngờ nhất? Điều này nói gì về cách embeddings biểu diễn ý nghĩa?**
-> *Viết 2-3 câu:*
+> Cặp 2 có score cao nhất (0.8712) dù hai câu khác ngôn ngữ, cao hơn cặp diễn đạt lại bằng tiếng Việt ở cặp 1 (0.6858). Điều này cho thấy local multilingual model ánh xạ tốt hai câu Việt–Anh có cùng số liệu và ý nghĩa; đồng thời score phụ thuộc cách model học biểu diễn chứ không chỉ số từ trùng nhau. Cặp khác chủ đề ở câu 5 chỉ đạt 0.0194, phù hợp dự đoán thấp.
+
+> Các score trên được đo bằng `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`, với embedding đã normalize và `compute_similarity()` của dự án.
 
 ---
 
@@ -121,28 +123,28 @@ Chạy **5 câu hỏi đánh giá của nhóm** trên mã nguồn cá nhân củ
 
 | # | Câu hỏi (Query) | Top-1 Chunk truy xuất được (tóm tắt) | Điểm Score | Có liên quan không? (Relevant) | Câu trả lời của Agent (tóm tắt) |
 |---|-------|--------------------------------|-------|-----------|------------------------|
-| 1 | Hạn mức, thời hạn và gia hạn mượn | `rmit-library-borrowing-returning:13` — menu/liên hệ thư viện (`0.2326`) | 0/2 | Không; thiếu cả hai evidence marker | Agent trích context thư viện nhưng không có hạn mức 25 tài liệu hay gia hạn 15 ngày. |
-| 2 | Điều kiện gia hạn thanh toán Standard Course | `rmit-fees-payments:2` — trang tổng quan học phí (`0.2764`) | 0/2 | Không | Agent nhận context cùng chủ đề phí nhưng thiếu mức nợ dưới 5 triệu và giới hạn 45 ngày. |
-| 3 | Biểu mẫu và nơi hủy chương trình | `rmit-enrolment:0` — navigation trang enrolment (`0.2641`) | 0/2 | Không | Agent không lấy được chunk 10 chứa Program Cancellation form trong myRMIT. |
-| 4 | Công dụng thẻ sinh viên | `rmit-defer-payment:16` — chứng từ thanh toán (`0.4011`) | 0/2 | Không | Top-3 có `rmit-student-cards:4` nhưng đó là ưu đãi, thiếu chunk 3 chứa danh sách công dụng chính. |
-| 5 | Phí khi hủy sau Census Date | `rmit-library-borrowing-returning:10` — hư hỏng tài liệu (`0.4253`) | 0/2 | Không | Context không có câu “still liable for tuition and other fees”, nên agent không thể trả lời đúng. |
+| 1 | Hạn mức, thời hạn và gia hạn mượn | `rmit-library-borrowing-returning:3` — hạn mức 25 tài liệu/30 ngày (`0.6089`) | 2/2 | Có; hai evidence marker nằm trong top-3 | Context chứa hạn mức, thời hạn và quy định gia hạn 15 ngày; agent có đủ bằng chứng để trả lời. |
+| 2 | Điều kiện gia hạn thanh toán Standard Course | `rmit-defer-payment:16` — chứng minh khả năng thanh toán (`0.6334`) | 0/2 | Không; đúng chủ đề nhưng sai section | Top-3 thiếu cả mức nợ dưới 5 triệu và giới hạn thanh toán không quá 45 ngày, nên context không đủ. |
+| 3 | Biểu mẫu và nơi hủy chương trình | `rmit-change-cancel-enrolment:10` — Program Cancellation form trong myRMIT (`0.5974`) | 2/2 | Có; evidence đứng top-1 | Agent có thể trả lời đúng biểu mẫu và nơi nộp từ chunk top-1. |
+| 4 | Công dụng thẻ sinh viên | `rmit-student-support:6` — blended learning/support (`0.5797`) | 0/2 | Không | Top-3 không chứa “print, scan and photocopy” hoặc “access secure areas”, nên không đủ bằng chứng. |
+| 5 | Phí khi hủy sau Census Date | `rmit-change-cancel-enrolment:9` — vẫn chịu học phí sau Census Date (`0.5777`) | 2/2 | Có; evidence đứng top-1 | Agent có đủ context để trả lời rằng sinh viên vẫn phải chịu học phí và các khoản phí khác. |
 
-**Bao nhiêu câu hỏi trả về chunk có liên quan trong top-3?** 0 / 5
+**Bao nhiêu câu hỏi trả về chunk có liên quan trong top-3?** 3 / 5 — tổng điểm 6/10.
 
 ### Nhận xét benchmark và failure analysis
 
-**Embedder và giới hạn phép đo:** Tôi đã thử cài `requirements-local.txt`, nhưng `sentence-transformers`/PyTorch không hoàn tất trên môi trường Python 3.14 trong thời gian cho phép. Benchmark vì vậy dùng MockEmbedder deterministic. Kết quả 0/10 chỉ phản ánh xếp hạng của vector mock, không đủ để kết luận Recursive-400 tốt hay xấu; số chunk (103), coherence và provenance vẫn kiểm chứng được.
+**Embedder và phép đo:** Benchmark chính thức sử dụng local multilingual embedder `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`, chạy trên CPU. Corpus chủ yếu bằng tiếng Anh trong khi query bằng tiếng Việt, nên multilingual semantic embedding phù hợp hơn MockEmbedder. Cùng `RecursiveChunker(chunk_size=400)`, hệ thống nạp 103 chunks và đạt 6/10, tăng từ baseline kỹ thuật 0/10 của MockEmbedder.
 
-**Precision và chunk coherence:** Các chunk Recursive-400 nhìn chung giữ được danh sách và đoạn văn tự nhiên. Tuy nhiên precision top-3 là 0/5 theo evidence marker; đúng `doc_id` không được tính nếu section không chứa bằng chứng.
+**Precision và chunk coherence:** Ba query Q1, Q3 và Q5 có evidence trong top-3; Q3 và Q5 giữ được biểu mẫu/quy trình hoặc điều kiện/ngoại lệ trong một chunk top-1. Q2 cho thấy đúng `doc_id` vẫn chưa đủ: hai kết quả đầu đều thuộc tài liệu hoãn thanh toán nhưng sai section và không chứa hai điều kiện định lượng. Q4 không retrieve được tài liệu thẻ sinh viên trong top-3.
 
-**A/B metadata filter:** Ở Q1, có filter trả `[library:13, library:9, library:8]`; không filter trả `[defer-payment:8, library:13, enrolment:0]`. Filter giảm nhiễu giữa tài liệu nhưng không lấy được chunks 3–4, nên tăng precision cấp document mà chưa tăng precision cấp chunk.
+**A/B metadata filter:** Ở Q1, có filter `audience=all` trả `[library:3, library:6, library:4]`, cả ba chunk đều thuộc tài liệu thư viện và chứa đủ hai evidence marker. Không filter trả `[library:3, defer-payment:8, fees-payments:4]`: hai slot bị tài liệu thanh toán chiếm và chỉ còn một phần evidence. Filter trước rồi rank giúp Q1 đạt 2/2; lượt không filter chỉ đạt mức một phần 1/2.
 
-**Grounding:** Agent offline chỉ trích nguyên context và giữ citation `[1]`, `[2]`, `[3]`, nên không bịa ngoài retrieval. Dù vậy, context thiếu evidence ở cả năm query nên câu trả lời không đúng/không đủ; score cao nhất `0.4253` ở Q5 vẫn là chunk sai về hư hỏng sách, chứng minh score chỉ là tín hiệu xếp hạng.
+**Grounding:** Agent offline chỉ trích context đã retrieve và giữ citation `[1]`, `[2]`, `[3]`, nên có thể truy vết về `doc_id`/chunk. Q1, Q3 và Q5 có context đủ evidence; Q2 và Q4 thiếu bằng chứng nên không được xem là trả lời đúng. Similarity cao vẫn chỉ là tín hiệu xếp hạng, không phải bằng chứng nội dung đúng.
 
-**Failure case rõ nhất — Q1:** Sau filter, cả ba slot đều thuộc đúng tài liệu thư viện nhưng chunks 13/9/8 lần lượt nói về menu, hư hỏng và mất tài liệu; chúng không chứa `Loan quota - 25 items` hay `Renewals last 15 days` nằm ở chunks 3–4. Nguyên nhân trực tiếp là MockEmbedder không có ngữ nghĩa; thêm vào đó Recursive-400 không overlap nên mỗi section bằng chứng chỉ có một cơ hội lọt top-k. Đề xuất: chạy lại mọi strategy bằng cùng multilingual semantic embedder, làm sạch navigation/footer, và thử recursive có overlap hoặc gắn lại heading vào từng chunk dài.
+**Failure case rõ nhất — Q2:** Top-1 `rmit-defer-payment:16` đạt 0.6334 và top-2 `rmit-defer-payment:4` đạt 0.6045, nhưng không chunk nào chứa `less than five million VND` hoặc `no more than 45 days`. Đây là lỗi “đúng document nhưng sai section”: embedding nhận đúng chủ đề thanh toán nhưng không đo trực tiếp mật độ bằng chứng trả lời. Đề xuất là làm sạch navigation/footer, tách theo heading trước rồi recursive với section dài, gắn lại heading vào chunk con và thử overlap nhỏ để điều kiện có thêm cơ hội lọt top-k.
 
 **Điều hay nhất tôi học được từ thành viên khác / nhóm khác (qua demo):**
-> *Viết 2-3 câu:*
+> So sánh baseline cho thấy không có chunker tốt tuyệt đối: fixed-size có overlap nhưng dễ cắt giữa ý, sentence chunker giữ câu nhưng có thể tạo chunk quá dài, còn recursive giữ ranh giới tự nhiên nhưng hiện không overlap. Bài học quan trọng là phải giữ nguyên corpus, query và embedder khi so sánh strategy, đồng thời chấm ở mức evidence trong chunk thay vì chỉ kiểm tra `doc_id`.
 
 ---
 
@@ -150,9 +152,9 @@ Chạy **5 câu hỏi đánh giá của nhóm** trên mã nguồn cá nhân củ
 
 | Tiêu chí | Điểm tự đánh giá |
 |----------|-------------------|
-| Khởi động (Warm-up) | / 5 |
-| Hướng tiếp cận của tôi (My Approach) | / 10 |
-| Hoàn thiện code (Core Implementation — tests) | / 30 |
-| Dự đoán độ tương tự (Similarity Predictions) | / 5 |
-| Kết quả truy xuất của tôi (Competition Results) | / 10 |
-| **Tổng phần cá nhân** | **/ 60** |
+| Khởi động (Warm-up) | 5 / 5 |
+| Hướng tiếp cận của tôi (My Approach) | 10 / 10 |
+| Hoàn thiện code (Core Implementation — tests) | 30 / 30 |
+| Dự đoán độ tương tự (Similarity Predictions) | 5 / 5 |
+| Kết quả truy xuất của tôi (Competition Results) | 6 / 10 |
+| **Tổng phần cá nhân** | **56 / 60** |
