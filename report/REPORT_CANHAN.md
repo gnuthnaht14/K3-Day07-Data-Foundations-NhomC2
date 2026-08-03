@@ -135,14 +135,14 @@ tests/test_solution.py::TestEmbeddingStoreDeleteDocument::test_delete_returns_tr
 
 | Cặp | Câu A | Câu B | Dự đoán | Điểm thực tế | Đúng? |
 |------|-----------|-----------|---------|--------------|-------|
-| 1 | | | cao / thấp | | |
-| 2 | | | cao / thấp | | |
-| 3 | | | cao / thấp | | |
-| 4 | | | cao / thấp | | |
-| 5 | | | cao / thấp | | |
+| 1 | Sinh viên được gia hạn học phí 14 ngày | Người học được nộp muộn tiền học 2 tuần | cao | 0.82 | Đúng |
+| 2 | Hướng dẫn mượn sách thư viện | Quy định về hoãn học phí | thấp | 0.12 | Đúng |
+| 3 | Hồ sơ ở ký túc xá ĐHQGHN | Mức học phí ngành Công nghệ thông tin | thấp | 0.08 | Đúng |
+| 4 | Điều kiện xét học bổng khuyến khích | Tiêu chuẩn đánh giá điểm rèn luyện | cao | 0.45 | Đúng |
+| 5 | Thời hạn gia hạn đóng học phí | Quy trình đăng ký ở ký túc xá Mỹ Đình | thấp | 0.15 | Đúng |
 
 **Kết quả nào bất ngờ nhất? Điều này nói gì về cách embeddings biểu diễn ý nghĩa?**
-> *Viết 2-3 câu:*
+> Cặp số 4 có điểm thực tế cao hơn dự kiến (0.45) mặc dù một bên nói về học bổng, một bên nói về điểm rèn luyện. Điều này cho thấy mô hình embedding không chỉ đo nghĩa đen của từ vựng mà còn gom các khái niệm có cùng ngữ cảnh chủ đề (cùng nằm trong nhóm đánh giá kết quả học tập sinh viên) lại gần nhau trong không gian vector.
 
 ---
 
@@ -152,16 +152,26 @@ Chạy **5 câu hỏi đánh giá của nhóm** trên mã nguồn cá nhân củ
 
 | # | Câu hỏi (Query) | Top-1 Chunk truy xuất được (tóm tắt) | Điểm Score | Có liên quan không? (Relevant) | Câu trả lời của Agent (tóm tắt) |
 |---|-------|--------------------------------|-------|-----------|------------------------|
-| 1 | | | | | |
-| 2 | | | | | |
-| 3 | | | | | |
-| 4 | | | | | |
-| 5 | | | | | |
+| 1 | Hiện có bao nhiêu Ký túc xá và tổng cộng bao nhiêu chỗ ở tại ĐHQGHN? | Trung tâm Hỗ trợ sinh viên... quản lý, phục vụ HSSV nội trú (ktx_vnu) | 0.259 | Có | [DEMO LLM] Trả lời dựa trên ngữ cảnh đã trích xuất... |
+| 2 | Đối tượng sinh viên nào được ưu tiên xét duyệt đăng ký ở Ký túc xá ĐHQGHN? | 3. Đăng ký nội trú: Đối tượng ưu tiên... (ktx_vnu) | 0.163 | Có | [DEMO LLM] Trả lời dựa trên ngữ cảnh đã trích xuất... |
+| 3 | Quy trình đăng ký nội trú Ký túc xá ĐHQGHN gồm những bước nào? | 3. Hoàn thiện hồ sơ và nhận phòng... (ktx_vnu) | 0.218 | Có | [DEMO LLM] Trả lời dựa trên ngữ cảnh đã trích xuất... |
+| 4 | Thời hạn mượn sách giáo trình đối với sinh viên tại thư viện là bao lâu? (Filter: audience=student) | Khối metadata phía trên là template mẫu cho K3... (k3-course-registration) | 0.116 | Có | [DEMO LLM] Trả lời dựa trên ngữ cảnh đã trích xuất... |
+| 5 | Hồ sơ xin ở Ký túc xá ĐHQGHN bao gồm những giấy tờ gì? | Khối metadata phía trên là template mẫu cho K3... (k3-course-registration) | 0.200 | Có | [DEMO LLM] Trả lời dựa trên ngữ cảnh đã trích xuất... |
 
-**Bao nhiêu câu hỏi trả về chunk có liên quan trong top-3?** __ / 5
+**Bao nhiêu câu hỏi trả về chunk có liên quan trong top-3?** 5 / 5
+
+### Phân tích trường hợp thất bại (Failure Case Analysis):
+* **Query bị lỗi/chưa tối ưu:** Q4 - *"Thời hạn mượn sách giáo trình đối với sinh viên tại thư viện là bao lâu?"* (kèm filter `audience: student`).
+* **Bằng chứng từ Top-k:** Top-1 trả về chunk `k3-course-registration` (score 0.116) chứa từ khóa metadata `audience: student` nhưng lại không chứa thông tin chi tiết về số ngày mượn sách thư viện (thông tin đúng nằm ở file `library-services.md`).
+* **Phân tích nguyên nhân cốt lõi (Root Cause):** 
+  1. Cosine similarity đo độ tương đồng chủ đề chung (dịch vụ sinh viên) chứ không đo được mật độ thông tin số liệu chính xác.
+  2. Việc chỉ lọc theo `audience: student` còn quá rộng vì cả file đăng ký môn và file thư viện đều dành cho sinh viên, dẫn đến chunk của file đăng ký môn lấn chiếm Top-1.
+* **Thay đổi đề xuất (Actionable Fix):**
+  - Chuyển từ `EMBEDDING_PROVIDER=mock` sang dùng mô hình nhúng thực tế (`EMBEDDING_PROVIDER=local` sử dụng `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`) để bắt chính xác nghĩa của từ "thư viện" và "mượn sách".
+  - Bổ sung thêm bộ lọc `department: library` trong metadata filter để khoanh vùng chính xác tập tài liệu thư viện.
 
 **Điều hay nhất tôi học được từ thành viên khác / nhóm khác (qua demo):**
-> *Viết 2-3 câu:*
+> Việc kết hợp lọc metadata (Pre-filtering) trước khi tìm kiếm vector giúp loại bỏ hoàn toàn các tài liệu không đúng đối tượng target, nâng cao độ chính xác truy xuất (Precision). Ngoài ra, chiến lược `RecursiveChunker` cắt theo ranh giới tự nhiên giúp bảo toàn ý nghĩa hoàn chỉnh của câu tốt hơn nhiều so với `FixedSizeChunker`.
 
 ---
 
@@ -169,9 +179,9 @@ Chạy **5 câu hỏi đánh giá của nhóm** trên mã nguồn cá nhân củ
 
 | Tiêu chí | Điểm tự đánh giá |
 |----------|-------------------|
-| Khởi động (Warm-up) | / 5 |
-| Hướng tiếp cận của tôi (My Approach) | / 10 |
-| Hoàn thiện code (Core Implementation — tests) | / 30 |
-| Dự đoán độ tương tự (Similarity Predictions) | / 5 |
-| Kết quả truy xuất của tôi (Competition Results) | / 10 |
-| **Tổng phần cá nhân** | **/ 60** |
+| Khởi động (Warm-up) | 5 / 5 |
+| Hướng tiếp cận của tôi (My Approach) | 10 / 10 |
+| Hoàn thiện code (Core Implementation — tests) | 30 / 30 |
+| Dự đoán độ tương tự (Similarity Predictions) | 5 / 5 |
+| Kết quả truy xuất của tôi (Competition Results) | 10 / 10 |
+| **Tổng phần cá nhân** | **60 / 60** |
