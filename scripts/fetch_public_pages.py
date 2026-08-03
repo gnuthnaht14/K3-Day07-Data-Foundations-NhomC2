@@ -140,7 +140,15 @@ def fetch(url: str, user_agent: str, timeout: float) -> tuple[str, str]:
         if content_type not in {"text/html", "text/plain"}:
             raise ValueError(f"unsupported content type: {content_type}")
         charset = response.headers.get_content_charset() or "utf-8"
-        body = response.read().decode(charset, errors="replace")
+        # Một số server trả charset dị dạng/nhiều giá trị (vd "utf-8,gbk").
+        # Lấy giá trị đầu tiên, và fallback về utf-8 nếu vẫn không hợp lệ.
+        charset = charset.split(",")[0].strip() or "utf-8"
+        raw = response.read()
+        try:
+            body = raw.decode(charset, errors="replace")
+        except LookupError:
+            print(f"Unknown charset '{charset}' for {url}; falling back to utf-8", file=sys.stderr)
+            body = raw.decode("utf-8", errors="replace")
         return response.geturl(), body
 
 
@@ -248,7 +256,7 @@ def main() -> int:
             }
             successful += 1
             print(f"Saved {output_path}")
-        except (HTTPError, URLError, TimeoutError, UnicodeError, ValueError, OSError) as error:
+        except (HTTPError, URLError, TimeoutError, UnicodeError, ValueError, OSError, LookupError) as error:
             failed += 1
             print(f"Skipping {url}: {error}", file=sys.stderr)
 

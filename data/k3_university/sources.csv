@@ -1,5 +1,11 @@
 doc_id,file_path,title,source_url,retrieved_at,document_version,license_or_permission
 k3-course-registration,data/k3_university/course-registration.md,Đăng ký học phần,https://example.edu/hoc-vu/dang-ky-hoc-phan,2026-08-02,2026.1,example-template-replace-me
 k3-library-services,data/k3_university/library-services.md,Dịch vụ thư viện,https://example.edu/thu-vien/dich-vu,2026-08-02,2026.1,example-template-replace-me
-
-ktx-vnu,data/k3_university/ktx-vnu.md,Giới thiệu tổng quan và quy định Ký túc xá ĐHQGHN,https://tuyensinh.vnu.edu.vn/index.php/Home/viewnews/163
+ktx-vnu,data/k3_university/ktx-vnu.md,Giới thiệu tổng quan và quy định Ký túc xá ĐHQGHN,https://tuyensinh.vnu.edu.vn/index.php/Home/viewnews/163,2026-08-03,2026-08-01,public-page
+rmit-change-cancel-enrolment,data/k3_university/rmit-change-cancel-enrolment.md,Change or cancel your enrolment,https://www.rmit.edu.vn/students/my-studies/enrolment/change-or-cancel-your-enrolment,2026-08-03,not-stated,public-page
+rmit-defer-payment,data/k3_university/rmit-defer-payment.md,Defer a payment,https://www.rmit.edu.vn/students/my-studies/fees-and-payments/defer-a-payment,2026-08-03,not-stated,public-page
+rmit-enrolment,data/k3_university/rmit-enrolment.md,Enrolment at RMIT Vietnam,https://www.rmit.edu.vn/students/my-studies/enrolment,2026-08-03,not-stated,public-page
+rmit-fees-payments,data/k3_university/rmit-fees-payments.md,Fees and payments,https://www.rmit.edu.vn/students/my-studies/fees-and-payments,2026-08-03,not-stated,public-page
+rmit-library-borrowing-returning,data/k3_university/rmit-library-borrowing-returning.md,Borrowing and returning,https://www.rmit.edu.vn/libraryvn/borrowing-and-resources/borrowing-and-returning,2026-08-03,not-stated,public-page
+rmit-student-cards,data/k3_university/rmit-student-cards.md,RMIT student cards,https://www.rmit.edu.vn/students/support/admin-support/rmit-student-cards,2026-08-03,not-stated,public-page
+rmit-student-support,data/k3_university/rmit-student-support.md,Student support,https://www.rmit.edu.vn/students/support,2026-08-03,not-stated,public-page

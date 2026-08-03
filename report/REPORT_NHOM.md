@@ -17,28 +17,46 @@
 **Chủ đề (cố định theo lớp K3):** Dịch vụ / quy định đại học (đăng ký môn, học phí, học bổng, thư viện, ký túc xá…).
 
 **Phạm vi cụ thể nhóm tập trung:**
-> *1 câu — ví dụ: thư viện + đăng ký môn học.*
+> Quy định đăng ký học, học phí và các dịch vụ hỗ trợ sinh viên tại Đại học RMIT Việt Nam, gồm thư viện và thẻ sinh viên.
+
+### Kết quả kiểm tra dữ liệu
+
+| Điều kiện | Kết quả | Bằng chứng |
+|-----------|---------|------------|
+| Có 5–10 tài liệu | Đạt | 7 file Markdown trong `data/k3_university/` |
+| Mọi file đủ metadata | Đạt | 7/7 file có `doc_id`, `title`, `source_url`, `retrieved_at`, `document_version` và `audience` |
+| `sources.csv` khớp một–một | Đạt | 7 dòng dữ liệu tương ứng đúng 7 `doc_id` và 7 đường dẫn file tồn tại |
+| Trường phân vai có ít nhất hai giá trị | Đạt | `audience`: `student` (6 tài liệu), `all` (1 tài liệu) |
 
 ### Danh sách tài liệu (Data Inventory)
 
 | # | Tên tài liệu | Nguồn (Source URL) | Ngày lấy / Phiên bản | Số ký tự | Metadata đã gán |
 |---|--------------|------------|--------------------|----------|-----------------|
-| 1 | | | | | |
-| 2 | | | | | |
-| 3 | | | | | |
-| 4 | | | | | |
-| 5 | | | | | |
+| 1 | Change or cancel your enrolment | [RMIT Vietnam](https://www.rmit.edu.vn/students/my-studies/enrolment/change-or-cancel-your-enrolment) | 2026-08-03 / `not-stated` | 6,024 | `audience=student`; `department=registrar`; `category=enrolment-policy`; `language=en` |
+| 2 | Defer a payment | [RMIT Vietnam](https://www.rmit.edu.vn/students/my-studies/fees-and-payments/defer-a-payment) | 2026-08-03 / `not-stated` | 7,553 | `audience=student`; `department=student-administration`; `category=payment-extension`; `language=en` |
+| 3 | Enrolment at RMIT Vietnam | [RMIT Vietnam](https://www.rmit.edu.vn/students/my-studies/enrolment) | 2026-08-03 / `not-stated` | 4,079 | `audience=student`; `department=registrar`; `category=enrolment`; `language=en` |
+| 4 | Fees and payments | [RMIT Vietnam](https://www.rmit.edu.vn/students/my-studies/fees-and-payments) | 2026-08-03 / `not-stated` | 4,583 | `audience=student`; `department=student-administration`; `category=tuition-fees`; `language=en` |
+| 5 | Borrowing and returning | [RMIT Vietnam](https://www.rmit.edu.vn/libraryvn/borrowing-and-resources/borrowing-and-returning) | 2026-08-03 / `not-stated` | 6,485 | `audience=all`; `department=library`; `category=borrowing-policy`; `language=en` |
+| 6 | RMIT student cards | [RMIT Vietnam](https://www.rmit.edu.vn/students/support/admin-support/rmit-student-cards) | 2026-08-03 / `not-stated` | 7,108 | `audience=student`; `department=student-administration`; `category=student-id`; `language=en` |
+| 7 | Student support | [RMIT Vietnam](https://www.rmit.edu.vn/students/support) | 2026-08-03 / `not-stated` | 4,368 | `audience=student`; `department=student-services`; `category=support-services`; `language=en` |
 
 **Danh sách kiểm tra quản trị dữ liệu (Data governance checklist):**
-- [ ] Tập tài liệu (Corpus) chỉ chứa nguồn công khai/được phép dùng và không chứa dữ liệu cá nhân, thông tin đăng nhập hoặc tài liệu nội bộ.
-- [ ] Mỗi tài liệu có `source_url`, `retrieved_at`, `document_version` (hoặc ngày hiệu lực) trong metadata.
+- [x] Tập tài liệu (Corpus) chỉ chứa nguồn công khai/được phép dùng và không chứa dữ liệu cá nhân, thông tin đăng nhập hoặc tài liệu nội bộ.
+- [x] Mỗi tài liệu có `source_url`, `retrieved_at`, `document_version` (hoặc ngày hiệu lực) trong metadata.
 
 ### Cấu trúc Metadata (Metadata Schema)
 
 | Trường metadata | Kiểu | Ví dụ giá trị | Tại sao hữu ích cho truy xuất (retrieval)? |
 |----------------|------|---------------|-------------------------------|
-| | | | |
-| | | | |
+| `doc_id` | Chuỗi định danh duy nhất | `rmit-defer-payment` | Truy vết chunk về đúng tài liệu gốc và đối chiếu với `sources.csv`. |
+| `title` | Chuỗi | `Defer a payment` | Hiển thị và nhận diện tài liệu trong kết quả truy xuất. |
+| `source_url` | URL công khai | `https://www.rmit.edu.vn/students/...` | Kiểm chứng nội dung và minh bạch nguồn. |
+| `retrieved_at` | Ngày ISO `YYYY-MM-DD` | `2026-08-03` | Đánh giá độ mới của bản dữ liệu đã thu thập. |
+| `document_version` | Chuỗi phiên bản/ngày hoặc `not-stated` | `not-stated` | Phân biệt các phiên bản chính sách và tránh suy đoán khi nguồn không nêu phiên bản. |
+| `audience` | Enum | `student`, `all` | Lọc tài liệu theo nhóm đối tượng; có hai giá trị để chứng minh metadata filtering. |
+| `department` | Enum | `registrar`, `library`, `student-administration` | Thu hẹp tìm kiếm theo đơn vị phụ trách dịch vụ hoặc quy định. |
+| `category` | Enum | `enrolment-policy`, `tuition-fees`, `borrowing-policy` | Lọc theo nghiệp vụ cụ thể trước khi xếp hạng semantic. |
+| `language` | Mã ngôn ngữ | `en` | Chọn tài liệu theo ngôn ngữ khi corpus được mở rộng. |
 
 ---
 
