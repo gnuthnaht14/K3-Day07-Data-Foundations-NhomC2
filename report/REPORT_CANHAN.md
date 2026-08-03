@@ -45,7 +45,7 @@ Do số lượng chunk phải là số nguyên, ta làm tròn lên.
 > *Đáp án: 23 chunks.*
 
 **Nếu độ chồng chéo (overlap) tăng lên 100, số lượng chunk thay đổi thế nào? Tại sao muốn độ chồng chéo nhiều hơn?**
-> *Viết 1-2 câu:* Nếu overlap tăng, số lượng chunk sẽ tăng lên do nội dung mỗi chunk bị  lặp lại nhiều hơn. Tăng overlap giúp các chunk giữ được tính toàn vẹn về mặt ngữ nghĩa, tránh bị cắt ngang đột ngột ở giữa câu hoặc giữa đoạn.
+> *Viết 1-2 câu:* Nếu overlap tăng, số lượng chunk sẽ tăng lên do nội dung mỗi chunk bị  lặp lại nhiều hơn. Tăng overlap giúp các chunk giữ được tính toàn vẹn về mặt ngữ nghĩa, tránh bị cắt ngang đột ngột ở giữa đoạn hoặc giúp llm hiểu đước mối liên hệ với các chunk trước.
 
 ---
 
