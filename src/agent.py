@@ -18,7 +18,7 @@ class KnowledgeBaseAgent:
         self.llm_fn = llm_fn
 
     def answer(self, question: str, top_k: int = 3) -> str:
-        if self.store.get_collection_size() == 0:
+        if hasattr(self.store, "get_collection_size") and self.store.get_collection_size() == 0:
             return "No context available in knowledge base to answer the question."
 
         chunks = self.store.search(question, top_k=top_k)
