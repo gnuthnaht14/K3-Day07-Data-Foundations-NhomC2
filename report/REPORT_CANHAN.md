@@ -62,10 +62,11 @@ Giải thích cách tiếp cận của bạn khi lập trình (implement) các p
 ### Lớp EmbeddingStore
 
 **`add_documents` + `search`** — hướng tiếp cận:
-> *Viết 2-3 câu: lưu trữ thế nào? Tính độ tương tự ra sao?*
+> Danh sách `Document` được chuẩn hóa thành từng bản ghi (record) chứa ID duy nhất, nội dung, bản sao metadata và vector embedding (tạo bởi `_embedding_fn`). Hàm `search` sử dụng tích vô hướng (dot product) để tính độ tương đồng giữa embedding của query và tất cả record trong kho, sau đó sắp xếp giảm dần theo điểm `score` và trả về `top_k` kết quả.
 
 **`search_with_filter` + `delete_document`** — hướng tiếp cận:
-> *Viết 2-3 câu: lọc (filter) trước hay sau? Xóa bằng cách nào?*
+> - **Lọc trước (Pre-filtering):** Hàm `search_with_filter` thực hiện lọc danh sách record theo `metadata_filter` trước, sau đó mới gọi `_search_records` để tìm kiếm và xếp hạng trên tập kết quả đã lọc. Nếu làm ngược lại (xếp hạng top-k trước rồi mới lọc), ta có thể nhận về 0 kết quả phù hợp ngay cả khi kho vẫn có tài liệu thỏa mãn metadata.
+> - **Xóa tài liệu (`delete_document`):** Duyệt danh sách lưu trữ và loại bỏ tất cả các chunk có `metadata['doc_id']` trùng với `doc_id` cần xóa, trả về `True` nếu có ít nhất 1 chunk bị xóa, ngược lại trả về `False`.
 
 ### Tác tử KnowledgeBaseAgent
 

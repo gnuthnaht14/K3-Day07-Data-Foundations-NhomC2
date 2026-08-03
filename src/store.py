@@ -90,14 +90,29 @@ class EmbeddingStore:
         """Return the total number of stored chunks."""
         return len(self._store)
 
-    def search_with_filter(self, query: str, top_k: int = 3, metadata_filter: dict = None) -> list[dict]:
+    def search_with_filter(
+        self, query: str, top_k: int = 3, metadata_filter: dict | None = None
+    ) -> list[dict]:
         """
         Search with optional metadata pre-filtering.
 
         First filter stored chunks by metadata_filter, then run similarity search.
         """
-        # TODO: filter by metadata, then search among filtered chunks
-        raise NotImplementedError("Implement EmbeddingStore.search_with_filter")
+        if not metadata_filter:
+            return self._search_records(query, self._store, top_k)
+
+        filtered_records = []
+        for rec in self._store:
+            rec_meta = rec.get("metadata", {})
+            match = True
+            for k, v in metadata_filter.items():
+                if rec_meta.get(k) != v:
+                    match = False
+                    break
+            if match:
+                filtered_records.append(rec)
+
+        return self._search_records(query, filtered_records, top_k)
 
     def delete_document(self, doc_id: str) -> bool:
         """
@@ -105,5 +120,9 @@ class EmbeddingStore:
 
         Returns True if any chunks were removed, False otherwise.
         """
-        # TODO: remove all stored chunks where metadata['doc_id'] == doc_id
-        raise NotImplementedError("Implement EmbeddingStore.delete_document")
+        initial_count = len(self._store)
+        self._store = [
+            rec for rec in self._store
+            if rec.get("metadata", {}).get("doc_id") != doc_id
+        ]
+        return len(self._store) < initial_count
