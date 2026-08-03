@@ -7,7 +7,7 @@ from typing import Any
 from ingest import build_knowledge_base
 from src.agent import KnowledgeBaseAgent
 from src.chunking import SentenceChunker
-from src.embeddings import _mock_embed
+from src.embeddings import LocalEmbedder, _mock_embed
 
 
 DATA_DIR = "data/rmit"
@@ -16,6 +16,24 @@ TOP_K = 3
 
 # This is the only strategy-specific line teammates should change.
 chunker = SentenceChunker(max_sentences_per_chunk=2)
+
+# Personal/supplementary run only: switch to a real semantic embedder to
+# sanity-check retrieval quality beyond the shared mock baseline. The
+# OFFICIAL team comparison must still use the same embedder as teammates
+# (_mock_embed) — keep USE_LOCAL_EMBEDDER = False for that run.
+USE_LOCAL_EMBEDDER = True
+
+if USE_LOCAL_EMBEDDER:
+    try:
+        embedding_fn = LocalEmbedder()
+        embedding_label = f"local sentence-transformers ({embedding_fn.model_name})"
+    except Exception as exc:  # e.g. sentence-transformers not installed, no internet
+        print(f"LocalEmbedder unavailable ({exc}); falling back to mock embeddings.")
+        embedding_fn = _mock_embed
+        embedding_label = "mock embeddings fallback (shared offline baseline)"
+else:
+    embedding_fn = _mock_embed
+    embedding_label = "mock embeddings fallback (shared offline baseline)"
 
 BENCHMARKS: list[dict[str, Any]] = [
     {
@@ -168,9 +186,9 @@ def result_signature(results: list[dict[str, Any]]) -> list[tuple[str | None, An
 
 
 def main() -> int:
-    store = build_knowledge_base(DATA_DIR, _mock_embed, chunker=chunker)
+    store = build_knowledge_base(DATA_DIR, embedding_fn, chunker=chunker)
     print(f"Benchmark: {BENCHMARK_VERSION}")
-    print("Embedding: mock embeddings fallback (shared offline baseline)")
+    print(f"Embedding: {embedding_label}")
     print("Strategy: SentenceChunker(max_sentences_per_chunk=2)")
     print(f"Loaded chunks: {store.get_collection_size()}")
     scores = []

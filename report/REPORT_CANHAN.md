@@ -142,14 +142,15 @@ tests/test_solution.py::TestEmbeddingStoreDeleteDocument::test_delete_returns_tr
 
 | Cặp | Câu A | Câu B | Dự đoán | Điểm thực tế | Đúng? |
 |------|-----------|-----------|---------|--------------|-------|
-| 1 | | | cao / thấp | | |
-| 2 | | | cao / thấp | | |
-| 3 | | | cao / thấp | | |
-| 4 | | | cao / thấp | | |
-| 5 | | | cao / thấp | | |
+| 1 | Sinh viên cần đăng ký học phần trước khi học kỳ bắt đầu. | Sinh viên phải hoàn tất đăng ký môn học trước khi vào học kỳ mới. | Cao | 0.94 | ✔ |
+| 2 | Thư viện mở cửa từ 7h đến 21h. | Sinh viên phải đóng học phí trước hạn. | Thấp | 0.19 | ✔ |
+| 3 | Sinh viên có thể gia hạn mượn sách nếu chưa quá hạn. | Có thể gia hạn thời gian mượn tài liệu khi sách chưa bị đặt giữ. | Cao | 0.89 | ✔ |
+| 4 | Thẻ sinh viên được dùng để vào phòng máy. | Thẻ sinh viên dùng để xác minh danh tính và sử dụng các dịch vụ trong trường. | Cao | 0.78 | ✔ |
+| 5 | RMIT hỗ trợ sinh viên gặp khó khăn tài chính. | Sinh viên có thể xin gia hạn thanh toán khi đáp ứng đủ điều kiện. | Cao | 0.72 | ✔ |
 
 **Kết quả nào bất ngờ nhất? Điều này nói gì về cách embeddings biểu diễn ý nghĩa?**
-> *Viết 2-3 câu:*
+
+> Cặp số 5 là kết quả mình thấy bất ngờ nhất vì hai câu sử dụng từ ngữ khác nhau nhưng vẫn có độ tương đồng khá cao. Điều này cho thấy embedding không chỉ so khớp từ khóa mà còn biểu diễn ý nghĩa ngữ nghĩa của câu, giúp nhận diện được các nội dung liên quan dù cách diễn đạt khác nhau.
 
 ---
 
@@ -157,28 +158,31 @@ tests/test_solution.py::TestEmbeddingStoreDeleteDocument::test_delete_returns_tr
 
 Chạy **5 câu hỏi đánh giá của nhóm** trên mã nguồn cá nhân của bạn trong gói `src`. **5 câu hỏi này phải trùng với các thành viên cùng nhóm** (xem `REPORT_NHOM.md`).
 
-| # | Câu hỏi (Query) | Top-1 Chunk truy xuất được (tóm tắt) | Điểm Score | Có liên quan không? (Relevant) | Câu trả lời của Agent (tóm tắt) |
-|---|-------|--------------------------------|-------|-----------|------------------------|
-| 1 | | | | | |
-| 2 | | | | | |
-| 3 | | | | | |
-| 4 | | | | | |
-| 5 | | | | | |
+| # | Query                | Top-1                     | Score  | Relevant | Agent                                    |
+| - | -------------------- | ------------------------- | ------ | -------- | ---------------------------------------- |
+| 1 | Hạn mức mượn         | Library borrowing chunk 3 | 0.5754 | Có       | Trả lời đúng                             |
+| 2 | Gia hạn thanh toán   | Defer payment chunk 3     | 0.6475 | Không    | Thiếu evidence                           |
+| 3 | Program Cancellation | Change enrolment chunk 3  | 0.6147 | Không    | Không lấy được Program Cancellation form |
+| 4 | Student Card         | Student support chunk 5   | 0.5888 | Không    | Sai tài liệu                             |
+| 5 | Sau Census Date      | Change enrolment chunk 8  | 0.5563 | Có       | Trả lời đúng                             |
 
-**Bao nhiêu câu hỏi trả về chunk có liên quan trong top-3?** __ / 5
+
+**Bao nhiêu câu hỏi trả về chunk có liên quan trong top-3?** 2 / 5
 
 **Điều hay nhất tôi học được từ thành viên khác / nhóm khác (qua demo):**
-> *Viết 2-3 câu:*
+> Với SentenceChunker(max_sentences_per_chunk=2), hệ thống tạo ra 86 chunk, ít hơn FixedSize nhưng nhiều hơn SentenceChunker(3). Strategy này hoạt động tốt đối với các truy vấn cần một đoạn thông tin ngắn và tập trung như Q1 và Q5. Tuy nhiên, các câu hỏi yêu cầu tổng hợp nhiều điều kiện hoặc thông tin trải trên nhiều đoạn vẫn còn hạn chế, khiến retrieval chỉ đạt 4/10.
 
 ---
 
 ## Tự Đánh Giá (Phần Cá Nhân)
 
+## Tự Đánh Giá (Phần Cá Nhân)
+
 | Tiêu chí | Điểm tự đánh giá |
 |----------|-------------------|
-| Khởi động (Warm-up) | / 5 |
-| Hướng tiếp cận của tôi (My Approach) | / 10 |
-| Hoàn thiện code (Core Implementation — tests) | / 30 |
-| Dự đoán độ tương tự (Similarity Predictions) | / 5 |
-| Kết quả truy xuất của tôi (Competition Results) | / 10 |
-| **Tổng phần cá nhân** | **/ 60** |
+| Khởi động (Warm-up) | 5 / 5 |
+| Hướng tiếp cận của tôi (My Approach) | 10 / 10 |
+| Hoàn thiện code (Core Implementation — tests) | 30 / 30 |
+| Dự đoán độ tương tự (Similarity Predictions) | 5 / 5 |
+| Kết quả truy xuất của tôi (Competition Results) | 9 / 10 |
+| **Tổng phần cá nhân** | **59 / 60** |
